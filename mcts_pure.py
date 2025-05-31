@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-A pure implementation of the Monte Carlo Tree Search (MCTS)
-
-@author: Junxiao Song
-"""
 
 import numpy as np
 import copy
@@ -21,11 +16,11 @@ def policy_value_fn(board):
     """a function that takes in a state and outputs a list of (action, probability)
     tuples and a score for the state"""
     # return uniform probabilities and 0 score for pure MCTS
-    action_probs = np.ones(len(board.availables))/len(board.availables)
+    action_probs = np.ones(len(board.availables)) / len(board.availables)
     return zip(board.availables, action_probs), 0
 
 
-class TreeNode(object):
+class TreeNode:
     """A node in the MCTS tree. Each node keeps track of its own value Q,
     prior probability P, and its visit-count-adjusted prior score u.
     """
@@ -52,8 +47,9 @@ class TreeNode(object):
         plus bonus u(P).
         Return: A tuple of (action, next_node)
         """
-        return max(self._children.items(),
-                   key=lambda act_node: act_node[1].get_value(c_puct))
+        return max(
+            self._children.items(), key=lambda act_node: act_node[1].get_value(c_puct)
+        )
 
     def update(self, leaf_value):
         """Update node values from leaf evaluation.
@@ -63,11 +59,10 @@ class TreeNode(object):
         # Count visit.
         self._n_visits += 1
         # Update Q, a running average of values for all visits.
-        self._Q += 1.0*(leaf_value - self._Q) / self._n_visits
+        self._Q += 1.0 * (leaf_value - self._Q) / self._n_visits
 
     def update_recursive(self, leaf_value):
-        """Like a call to update(), but applied recursively for all ancestors.
-        """
+        """Like a call to update(), but applied recursively for all ancestors."""
         # If it is not root, this node's parent should be updated first.
         if self._parent:
             self._parent.update_recursive(-leaf_value)
@@ -80,20 +75,20 @@ class TreeNode(object):
         c_puct: a number in (0, inf) controlling the relative impact of
             value Q, and prior probability P, on this node's score.
         """
-        self._u = (c_puct * self._P *
-                   np.sqrt(self._parent._n_visits) / (1 + self._n_visits))
+        self._u = (
+            c_puct * self._P * np.sqrt(self._parent._n_visits) / (1 + self._n_visits)
+        )
         return self._Q + self._u
 
     def is_leaf(self):
-        """Check if leaf node (i.e. no nodes below this have been expanded).
-        """
+        """Check if leaf node (i.e. no nodes below this have been expanded)."""
         return self._children == {}
 
     def is_root(self):
         return self._parent is None
 
 
-class MCTS(object):
+class MCTS:
     """A simple implementation of Monte Carlo Tree Search."""
 
     def __init__(self, policy_value_fn, c_puct=5, n_playout=10000):
@@ -117,7 +112,7 @@ class MCTS(object):
         State is modified in-place, so a copy must be provided.
         """
         node = self._root
-        while(1):
+        while 1:
             if node.is_leaf():
 
                 break
@@ -165,8 +160,9 @@ class MCTS(object):
         for n in range(self._n_playout):
             state_copy = copy.deepcopy(state)
             self._playout(state_copy)
-        return max(self._root._children.items(),
-                   key=lambda act_node: act_node[1]._n_visits)[0]
+        return max(
+            self._root._children.items(), key=lambda act_node: act_node[1]._n_visits
+        )[0]
 
     def update_with_move(self, last_move):
         """Step forward in the tree, keeping everything we already know
@@ -182,8 +178,9 @@ class MCTS(object):
         return "MCTS"
 
 
-class MCTSPlayer(object):
+class MCTSPlayer:
     """AI player based on MCTS"""
+
     def __init__(self, c_puct=5, n_playout=2000):
         self.mcts = MCTS(policy_value_fn, c_puct, n_playout)
 

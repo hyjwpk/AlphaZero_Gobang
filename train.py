@@ -7,14 +7,15 @@ from game import Board, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
 from policy_value_net_pytorch import PolicyValueNet  # Pytorch
+import time
 
 
 class TrainPipeline:
     def __init__(self, init_model=None):
         # params of the board and the game
-        self.board_width = 6
-        self.board_height = 6
-        self.n_in_row = 4
+        self.board_width = 9
+        self.board_height = 9
+        self.n_in_row = 5
         self.board = Board(
             width=self.board_width, height=self.board_height, n_in_row=self.n_in_row
         )
@@ -32,7 +33,7 @@ class TrainPipeline:
         self.epochs = 5  # num of train_steps for each update
         self.kl_targ = 0.02
         self.check_freq = 50
-        self.game_batch_num = 1500
+        self.game_batch_num = 3000
         self.best_win_ratio = 0.0
         # num of simulations used for the pure mcts, which is used as
         # the opponent to evaluate the trained policy
@@ -171,7 +172,11 @@ class TrainPipeline:
         try:
             for i in range(self.game_batch_num):
                 self.collect_selfplay_data(self.play_batch_size)
-                print("batch i:{}, episode_len:{}".format(i + 1, self.episode_len))
+                print("{}, batch i:{}, episode_len:{}".format(
+                    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                    i + 1,
+                    self.episode_len,
+                ))
                 if len(self.data_buffer) > self.batch_size:
                     loss, entropy = self.policy_update()
                 # check the performance of the current model,

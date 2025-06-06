@@ -1,64 +1,50 @@
-## AlphaZero-Gomoku
-This is an implementation of the AlphaZero algorithm for playing the simple board game Gomoku (also called Gobang or Five in a Row) from pure self-play training. The game Gomoku is much simpler than Go or chess, so that we can focus on the training scheme of AlphaZero and obtain a pretty good AI model on a single PC in a few hours. 
+# AlphaZero-Gobang
 
-References:  
-1. AlphaZero: Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm
-2. AlphaGo Zero: Mastering the game of Go without human knowledge
+本项目基于 [junxiaosong/AlphaZero_Gomoku](https://github.com/junxiaosong/AlphaZero_Gomoku) 实现，原始版本通过 AlphaZero 方法对 Gomoku（五子棋）进行训练，并在短时间内获得不错的对弈效果。
 
-### Update 2018.2.24: supports training with TensorFlow!
-### Update 2018.1.17: supports training with PyTorch!
+在此基础上，我进行了以下扩展与优化：
 
-### Example Games Between Trained Models
-- Each move with 400 MCTS playouts:  
-![playout400](https://raw.githubusercontent.com/junxiaosong/AlphaZero_Gomoku/master/playout400.gif)
+## ✨ 项目增强内容
 
-### Requirements
-To play with the trained AI models, only need:
-- Python >= 2.7
-- Numpy >= 1.11
+- ✅ **PyTorch 版 9×9 五子棋模型**：训练了适用于标准五子棋（9×9 棋盘，五子连珠）的模型，兼容原项目推理流程。
 
-To train the AI model from scratch, further need, either:
-- Theano >= 0.7 and Lasagne >= 0.1      
-or
-- PyTorch >= 0.2.0    
-or
-- TensorFlow
+- ✅ **并行蒙特卡洛树搜索（Parallel MCTS）**：引入树并行与虚拟损失机制，多进程同时进行模拟搜索，加快推理速度。
+- ✅ **性能测试脚本**：提供测试脚本，可一键比较串行与并行 MCTS 的速度差异。
 
-**PS**: if your Theano's version > 0.7, please follow this [issue](https://github.com/aigamedev/scikit-neuralnetwork/issues/235) to install Lasagne,  
-otherwise, force pip to downgrade Theano to 0.7 ``pip install --upgrade theano==0.7.0``
+## 🚀 快速开始
 
-If you would like to train the model using other DL frameworks, you only need to rewrite policy_value_net.py.
+✅ mcts_alphaZero 并行性能测试
 
-### Getting Started
-To play with provided models, run the following script from the directory:  
+```bash
+test_alphaZero.py
 ```
-python human_play.py  
-```
-You may modify human_play.py to try different provided models or the pure MCTS.
 
-To train the AI model from scratch, with Theano and Lasagne, directly run:   
-```
-python train.py
-```
-With PyTorch or TensorFlow, first modify the file [train.py](https://github.com/junxiaosong/AlphaZero_Gomoku/blob/master/train.py), i.e., comment the line
-```
-from policy_value_net import PolicyValueNet  # Theano and Lasagne
-```
-and uncomment the line 
-```
-# from policy_value_net_pytorch import PolicyValueNet  # Pytorch
-or
-# from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
-```
-and then execute: ``python train.py``  (To use GPU in PyTorch, set ``use_gpu=True`` and use ``return loss.item(), entropy.item()`` in function train_step in policy_value_net_pytorch.py if your pytorch version is greater than 0.5)
+**串行 vs 并行 性能对比 （NVIDIA A100 GPU/8进程 加速 4.6x）：**
 
-The models (best_policy.model and current_policy.model) will be saved every a few updates (default 50).  
+```
+(串行): avg_time = 1.7381s, playout/s = 575.3
+(并行): avg_time = 0.3749s, playout/s = 2667.4
+```
 
-**Note:** the 4 provided models were trained using Theano/Lasagne, to use them with PyTorch, please refer to [issue 5](https://github.com/junxiaosong/AlphaZero_Gomoku/issues/5).
+✅ mcts_pure 并行性能测试
 
-**Tips for training:**
-1. It is good to start with a 6 * 6 board and 4 in a row. For this case, we may obtain a reasonably good model within 500~1000 self-play games in about 2 hours.
-2. For the case of 8 * 8 board and 5 in a row, it may need 2000~3000 self-play games to get a good model, and it may take about 2 days on a single PC.
+```bash
+test_pure.py
+```
 
-### Further reading
-My article describing some details about the implementation in Chinese: [https://zhuanlan.zhihu.com/p/32089487](https://zhuanlan.zhihu.com/p/32089487) 
+**串行 vs 并行 性能对比 （8进程 加速 4.5x）：**
+
+```
+(串行): avg_time = 2.7728s, playout/s = 360.7
+(并行): avg_time = 0.6100s, playout/s = 1639.4
+```
+
+## **📂 原始项目说明**
+
+本项目基于以下原始仓库扩展开发：
+
+> 原始项目作者：[@junxiaosong](https://github.com/junxiaosong)
+
+> 仓库地址：https://github.com/junxiaosong/AlphaZero_Gomoku
+
+完整的原始说明请见 [README_original.md](./README_original.md)
